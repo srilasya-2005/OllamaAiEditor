@@ -1,0 +1,76 @@
+import React from 'react';
+import { Files, Search, GitBranch, Play, Puzzle, Settings, Sparkles } from 'lucide-react';
+import { useEditor } from '../contexts/EditorContext';
+import clsx from 'clsx';
+
+const ActivityBar = () => {
+    const { activePanel, setActivePanel, sidebarVisible, setSidebarVisible, aiSidebarVisible, setAiSidebarVisible } = useEditor();
+
+    const handleClick = (panel) => {
+        if (panel === 'ai-chat') {
+            setAiSidebarVisible(!aiSidebarVisible);
+            return;
+        }
+
+        if (activePanel === panel && sidebarVisible) {
+            setSidebarVisible(false);
+        } else {
+            setActivePanel(panel);
+            setSidebarVisible(true);
+        }
+    };
+
+    const IconButton = ({ panel, icon: Icon, tooltip, gradient }) => (
+        <div className="relative group">
+            <button
+                className={clsx(
+                    "p-3 w-12 h-12 flex items-center justify-center transition-colors border-l-2",
+                    (panel === 'ai-chat' ? aiSidebarVisible : (activePanel === panel && sidebarVisible))
+                        ? "text-white border-white"
+                        : "text-gray-500 hover:text-gray-300 border-transparent"
+                )}
+                onClick={() => handleClick(panel)}
+                title={tooltip}
+            >
+                {gradient ? (
+                    <div className="relative">
+                        <Icon size={24} strokeWidth={1.5} className="text-transparent bg-gradient-to-br from-purple-400 to-pink-400 bg-clip-text" style={{ stroke: 'url(#gradient)' }} />
+                        <svg width="0" height="0">
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stopColor="#a855f7" />
+                                    <stop offset="100%" stopColor="#ec4899" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <Sparkles size={24} strokeWidth={1.5} className={clsx(
+                            "absolute inset-0",
+                            aiSidebarVisible ? "text-purple-400" : "text-purple-500"
+                        )} />
+                    </div>
+                ) : (
+                    <Icon size={24} strokeWidth={1.5} />
+                )}
+            </button>
+            {/* Tooltip */}
+            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-[#252526] text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 border border-[#454545]">
+                {tooltip}
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="w-12 bg-[#333333] flex flex-col items-center py-1 h-full z-10 shrink-0">
+            <IconButton panel="explorer" icon={Files} tooltip="Explorer (Ctrl+Shift+E)" />
+            <IconButton panel="search" icon={Search} tooltip="Search (Ctrl+Shift+F)" />
+            <IconButton panel="ai-chat" icon={Sparkles} tooltip="Ollama AI (Ctrl+Shift+I)" gradient />
+            <IconButton panel="source-control" icon={GitBranch} tooltip="Source Control (Ctrl+Shift+G)" />
+            <IconButton panel="run" icon={Play} tooltip="Run and Debug (Ctrl+Shift+D)" />
+            <IconButton panel="extensions" icon={Puzzle} tooltip="Extensions (Ctrl+Shift+X)" />
+            <div className="flex-1" />
+            <IconButton panel="settings" icon={Settings} tooltip="Settings (Ctrl+,)" />
+        </div>
+    );
+};
+
+export default ActivityBar;
